@@ -1,0 +1,121 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+datarootdir = @datarootdir@
+datadir = @datadir@
+mandir = @mandir@
+
+applications_dir = $(datadir)/applications
+mime_dir = $(datadir)/mime
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+DEFS = @DEFS@
+LIBS = @LIBS@
+INSTALL = @INSTALL@
+UPDATE_DESKTOP_DATABASE = @UPDATE_DESKTOP_DATABASE@
+UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
+
+LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
+LIBCURL_LIBS = @LIBCURL_LIBS@
+LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
+LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
+
+compile = $(CC) $(CFLAGS) $(LIBCURL_CFLAGS) $(LIBGCRYPT_CFLAGS) -I@top_builddir@ $(CPPFLAGS) $(DEFS)
+link = $(CC) $(CFLAGS) $(LDFLAGS)
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+distname = @PACKAGE_TARNAME@-@PACKAGE_VERSION@
+distfiles = clamz.c playlist.c options.c download.c vars.c clamz.h \
+	README COPYING clamz.1 configure install-sh \
+	configure.ac Makefile.in config.h.in \
+	clamz.desktop clamz.xml
+
+all: clamz@EXEEXT@
+
+## Building clamz ##
+
+clamz@EXEEXT@: clamz.@OBJEXT@ options.@OBJEXT@ playlist.@OBJEXT@ download.@OBJEXT@ vars.@OBJEXT@
+	$(link) -o clamz@EXEEXT@ clamz.@OBJEXT@ options.@OBJEXT@ playlist.@OBJEXT@ download.@OBJEXT@ vars.@OBJEXT@ $(LIBGCRYPT_LIBS) $(LIBCURL_LIBS) $(LIBS)
+
+clamz.@OBJEXT@: clamz.c clamz.h config.h
+	$(compile) -c $(srcdir)/clamz.c
+
+playlist.@OBJEXT@: playlist.c clamz.h config.h
+	$(compile) -c $(srcdir)/playlist.c
+
+options.@OBJEXT@: options.c clamz.h config.h
+	$(compile) -c $(srcdir)/options.c
+
+download.@OBJEXT@: download.c clamz.h config.h
+	$(compile) -c $(srcdir)/download.c
+
+vars.@OBJEXT@: vars.c clamz.h config.h
+	$(compile) -c $(srcdir)/vars.c
+
+## Installation ##
+
+install: install-clamz install-desktop install-mime
+
+install-clamz: clamz@EXEEXT@
+	$(INSTALL) -d -m 755 $(DESTDIR)$(bindir)
+	$(INSTALL) -m 755 clamz@EXEEXT@ $(DESTDIR)$(bindir)
+	$(INSTALL) -d -m 755 $(DESTDIR)$(mandir)/man1
+	$(INSTALL) -m 644 $(srcdir)/clamz.1 $(DESTDIR)$(mandir)/man1
+
+install-desktop:
+	$(INSTALL) -d -m 755 $(DESTDIR)$(applications_dir)
+	$(INSTALL) -m 644 $(srcdir)/clamz.desktop $(DESTDIR)$(applications_dir)
+	$(UPDATE_DESKTOP_DATABASE) $(DESTDIR)$(applications_dir)
+
+install-mime:
+	$(INSTALL) -d -m 755 $(DESTDIR)$(mime_dir)/packages
+	$(INSTALL) -m 644 $(srcdir)/clamz.xml $(DESTDIR)$(mime_dir)/packages
+	$(UPDATE_MIME_DATABASE) $(DESTDIR)$(mime_dir)
+
+## Uninstallation ##
+
+uninstall: uninstall-clamz uninstall-desktop uninstall-mime
+
+uninstall-clamz:
+	rm -f $(DESTDIR)$(bindir)/clamz@EXEEXT@
+	rm -f $(DESTDIR)$(mandir)/man1/clamz.1
+
+uninstall-desktop:
+	rm -f $(DESTDIR)$(applications_dir)/clamz.desktop
+	$(UPDATE_DESKTOP_DATABASE) $(DESTDIR)$(applications_dir)
+
+uninstall-mime:
+	rm -f $(DESTDIR)$(mime_dir)/packages/clamz.xml
+	$(UPDATE_MIME_DATABASE) $(DESTDIR)$(mime_dir)
+
+## Building source tarball ##
+
+dist:
+	rm -rf $(distname)
+	rm -f $(distname).tar.gz
+	mkdir $(distname)
+	set -e ; for i in $(distfiles) ; do \
+	 cp -p $$i $(distname)/$$i ; \
+	done
+	tar cfvz $(distname).tar.gz $(distname)/
+
+## Cleaning up ##
+
+clean:
+	rm -f clamz@EXEEXT@
+	rm -f clamz.@OBJEXT@ options.@OBJEXT@ playlist.@OBJEXT@ download.@OBJEXT@ vars.@OBJEXT@
+
+distclean: clean
+	rm -rf $(distname)
+	rm -f $(distname).tar.gz
+	rm -rf autom4te.cache
+	rm -f aclocal.m4 config.status config.h config.log Makefile
+
+.PHONY: all clean dist distclean install uninstall
+.PHONY: install-clamz install-desktop install-mime
+.PHONY: uninstall-clamz uninstall-desktop uninstall-mime

@@ -1,0 +1,194 @@
+Clamz 0.5
+---------
+
+ Clamz is a little command-line program to download MP3 files from
+ Amazon.com's music store.  It is intended to serve as a substitute
+ for Amazon's official MP3 Downloader, which is not free software (and
+ therefore is only available in binary form for a limited set of
+ platforms.)  Clamz can be used to download either individual songs or
+ complete albums that you have purchased from Amazon.
+
+ Clamz is free software.  Please see the COPYING file for more
+ information.
+
+
+But First
+---------
+
+ A reminder that there is ABSOLUTELY NO WARRANTY OF ANY KIND for this
+ program.  See the COPYING file if you find this in any way unclear.
+ USE THIS PROGRAM AT YOUR OWN RISK!
+
+
+Installation
+------------
+
+ Clamz uses the libraries libgcrypt, libcurl, and libexpat.  As such,
+ you must have these libraries, including the "development" files,
+ installed on your system prior to installing Clamz.  The exact
+ package names vary between distributions.
+
+  Debian: install the packages libgcrypt11-dev, libcurl4-gnutls-dev or
+    libcurl4-openssl-dev, and libexpat1-dev.
+
+  Fedora: install the packages libgcrypt-devel, curl-devel, and
+    expat-devel.
+
+ To compile clamz, untar the source package and run the following
+ commands:
+
+	./configure
+	make
+
+ To install, run (as root):
+
+	make install
+
+
+Usage
+-----
+
+ When you buy a single song from Amazon, you have the option to either
+ download it in your web browser (the default behavior) or via the MP3
+ Downloader.  When you buy an album, Amazon gives you no choice: you
+ must enable the MP3 Downloader.
+
+ To enable the MP3 downloader in the web store, visit the following URL:
+
+  http://www.amazon.com/gp/dmusic/after_download_manager_install.html?AMDVersion=1.0.9
+
+ (Ignore all the instructions on that page, of course.)  This works by
+ setting a cookie in your browser; it seems to be completely separate
+ from your Amazon account.  If you are outside the US, replace
+ 'amazon.com' with the corresponding domain for your country (e.g.,
+ amazon.co.uk for the UK, or amazon.fr for France.)  Amazon does not
+ allow anyone to purchase MP3 files from outside their country of
+ residence.
+
+ In any case, when you actually go to download the file(s), if the
+ appropriate cookie is set you will be directed to open or download an
+ AMZ file.  This file is basically just an encrypted list of URLs plus
+ additional information (artist, title, and so forth) about the songs.
+
+ Save the AMZ file somewhere, and run clamz on it; by default this
+ will just download all of the linked files into the current
+ directory.  More control over where the files are downloaded and how
+ they are named is available via the command line, as well as the
+ configuration file, ~/.clamz/config.
+
+
+Problems?
+---------
+
+ Let's hope there aren't any.  If you do encounter a problem, here's
+ what to do:
+
+  - Keep a second copy of the AMZ file.  Clamz will automatically save
+    a copy in the ~/.clamz/amzfiles/ directory.  Be aware, however,
+    that if you try to use Amazon's official MP3 Downloader to open
+    the AMZ file, it will automatically delete the file after reading
+    it!  Make sure to keep an extra copy around -- it will be useful
+    in figuring out what went wrong.
+
+  - Clamz keeps detailed logs of its interactions with the Amazon web
+    servers; these are stored in the ~/.clamz/logs/ directory.  These
+    log files may also be useful in figuring out what went wrong.
+
+  - Use clamz -i to print out the details of the AMZ file, if
+    possible.  There are basically two ways Amazon might try to break
+    Clamz: by changing the AMZ format, or by blocking Clamz from their
+    servers.  In the former case the format will need to be
+    reverse-engineered anew.  In the latter case, though, you may be
+    able to download the files by other means, such as through a web
+    browser.
+
+  - Please report any problems you encounter.  You can use the Clamz
+    bug tracker (http://code.google.com/p/clamz/issues/list), or
+    contact me directly at floppusmaximus@users.sf.net.
+
+
+History
+-------
+
+Version 0.5 -- 2011-10-23
+
+ * Support unencrypted AMZ files, which Amazon has recently started
+   using for the Amazon Cloud Player.  (If you choose not to use the
+   Cloud Player, the old MP3 store interface is still using encrypted
+   AMZ files, at least for now.)  Thanks to John Southworth for
+   identifying the problem and providing a patch.
+
+
+Version 0.4 -- 2010-04-30
+
+ * Changed the User-Agent string, to accomodate Amazon's UK servers.
+   Clamz should work fine with the Amazon UK store, but as I
+   personally have no way of testing it, your bug reports are always
+   appreciated!
+
+ * Interactions with the server are recorded to a log file, stored in
+   the ~/.clamz/logs/ directory.
+
+ * When clamz is launched directly from a web browser, files are
+   stored in the desktop "music" directory by default.  (This is
+   normally defined in the file ~/.config/user-dirs.dirs if you are
+   running a desktop environment such as GNOME or KDE.  If not,
+   $HOME/Music is used instead.)
+
+ * File names may include the user-dirs variables ($XDG_DESKTOP_DIR,
+   $XDG_MUSIC_DIR, etc.), and may include conditional variable
+   expressions (${foo:-bar} and ${foo:+bar}), similar to shell
+   variable expansion.
+
+ * Improved curl error reporting.
+
+ * When resuming a partial download, the progress display takes the
+   existing portion of the file into account.
+
+ * Non-ASCII characters are handled better in the progress display.
+
+
+Version 0.3 -- 2010-03-31
+
+ * Added MIME info and desktop files for GNOME/KDE/etc.  Your web
+   browser should offer to launch clamz when you download an AMZ file
+   (you may want to edit the settings in ~/.clamz/config beforehand.)
+
+ * Fixed an old bug that caused clamz to fail when an absolute path is
+   specified.
+
+ * Added 'OutputDir' option to specify an output directory from the
+   ~/.clamz/config file.
+
+ * Added missing initialization code to placate libgcrypt.
+
+ * The variables ${amz_title}, ${amz_creator}, ${amz_asin}, and
+   ${amz_genre} have been deprecated; this information is no longer
+   supplied in current AMZ files.  The (essentially equivalent)
+   variables ${album}, ${album_artist}, and ${album_asin} can be used
+   instead, but there doesn't seem to be any "album genre" field.
+
+ * Added -r option to resume a partially-completed download.
+
+ * If an error occurs while downloading, automatically retry up to 5
+   times.
+
+ * Thanks to the many users who have sent in their suggestions and bug
+   reports!  Particular thanks go to Jim Radford for his helpful
+   suggestions and patches regarding several of the above issues.
+
+
+Version 0.2 -- 2008-10-10
+
+ * Fixed a rather serious bug preventing clamz from parsing certain
+   amz files.
+
+ * Added -x option to dump raw XML (thanks to Dan Lenski for this
+   addition.)
+
+ * Made configure script more aggressive.
+
+
+Version 0.1 -- 2008-03-26
+
+ * First release.

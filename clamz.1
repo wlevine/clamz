@@ -1,0 +1,163 @@
+.TH clamz 1 "October 2011" "Clamz 0.5"
+.SH NAME
+clamz \- download MP3 music files from Amazon.com
+.SH SYNOPSIS
+\fBclamz\fR [ \fIoptions\fR ] \fIamz-file\fR ...
+
+.SH DESCRIPTION
+\fBclamz\fR is a little command-line program to download MP3 files
+from Amazon.com's music store.  It is intended to serve as a
+substitute for Amazon's official MP3 Downloader, which is not free
+software (and therefore is only available in binary form for a limited
+set of platforms.)  \fBclamz\fR can be used to download either
+individual songs or complete albums that you have purchased from
+Amazon.
+
+In order to use \fBclamz\fR, you must first enable the ``MP3 dowloader
+mode'' by visiting the following URL:
+.IP
+http://www.amazon.com/gp/dmusic/after_download_manager_install.html?AMDVersion=1.0.9
+.PP
+If you are outside the US, replace `amazon.com' with the corresponding
+domain for your country (e.g., amazon.co.uk for the UK, or amazon.fr
+for France.)  Amazon does not allow anyone to purchase MP3 files from
+outside their country of residence.
+
+To download the contents of an AMZ file into the current directory,
+just run
+.IP
+clamz \fIsome-file-name\fR.amz
+.PP
+More advanced options are listed below.
+
+.SS OPTIONS
+.TP
+\fB-o\fR \fIname-format\fR, \fB--output\fR=\fIname-format\fR
+Set the name of the downloaded file(s).  This may contain any of
+several variables which are derived from the input AMZ file; see
+\fBFORMAT VARIABLES\fR below.  Note that the format string should be
+enclosed in single quotes, to stop the shell from expanding variables
+itself.
+.TP
+\fB-d\fR \fIdirectory-format\fR, \fB--output-dir\fR=\fIdirectory-format\fR
+Set the directory where the downloaded files should be placed.  (If
+this directory does not exist, it will be created.)  This may also
+contain format variables.
+.TP
+\fB-r\fR, \fB--resume\fR
+Resume downloading a partially-downloaded album.  (By default, if you
+are downloading a file named foo.mp3, and the file foo.mp3 already
+exists in the destination directory, \fBclamz\fR will rename the new
+file to foo.mp3.1 to avoid overwriting the old file.  If the \fB-r\fR
+option is used, \fBclamz\fR will instead assume that the first part of
+the file has already been downloaded, and will resume downloading from
+where it left off.)
+.TP
+\fB-i\fR, \fB--info\fR
+Rather than downloading anything, just display detailed information
+about the given AMZ file(s) to standard output.
+.TP
+\fB-x\fR, \fB--xml\fR
+Rather than downloading anything, print the raw, decrypted XML data
+from the AMZ file to standard output.
+.TP
+\fB-v\fR, \fB--verbose\fR
+Display detailed information while downloading.
+.TP
+\fB-q\fR, \fB--quiet\fR
+Turn off the normal progress display; display only error messages.
+.TP
+\fB--forbid-chars\fR=\fIcharacters\fR
+Do not allow the given \fIcharacters\fR to be used in output
+filenames.  Note that control characters and slashes may never be used
+in filenames.
+.TP
+\fB--allow-chars\fR=\fIcharacters\fR
+Opposite of the above; remove the given \fIcharacters\fR from the set
+of disallowed characters.
+.TP
+\fB--allow-uppercase\fR
+Allow uppercase letters in filenames.
+.TP
+\fB--forbid-uppercase\fR
+Do not allow uppercase letters in filenames.
+.TP
+\fB--utf8-filenames\fR
+Use UTF-8 when writing filenames (the default behavior is to use UTF-8
+if the system locale says so, otherwise ASCII.)
+.TP
+\fB--ascii-filenames\fR
+Use only ASCII characters in filenames.
+.TP
+\fB--help\fR
+Print out a summary of options.
+.TP
+\fB--version\fR
+Print out version information.
+
+.SS FORMAT VARIABLES
+As part of a \fIname-format\fR or \fIdirectory-format\fR option, you
+may include references to environment variables (e.g., \fB$HOME\fR) or
+to the `xdg-user-dirs' configuration variables (e.g.,
+\fB$XDG_MUSIC_DIR\fR or \fB$XDG_DESKTOP_DIR\fR.)
+
+In addition, the following special variables are defined for each track,
+based on the information provided in the AMZ file, and subject to the
+above configuration options (\fB--forbid-chars\fR,
+\fB--forbid-uppercase\fR, etc.)
+.TP
+\fB${title}\fR, \fB${creator}\fR, \fB${tracknum}\fR, \fB${discnum}\fR, \fB${genre}\fR, \fB${asin}\fR
+Title, creator, track number, disc number, genre, and ASIN (Amazon
+Standard Identification Number) of each individual track.
+.TP
+\fB${album}\fR, \fB${album_artist}\fR, \fB${album_asin}\fR
+Title, primary artist, and ASIN of the album the track comes from.
+(This information is available both for single-track and full-album
+downloads.)
+.TP
+\fB${suffix}\fR
+Suffix of the output file (currently only `mp3'.)
+.TP
+\fB${amz_title}\fR, \fB${amz_creator}\fR, \fB${amz_genre}\fR, \fB${amz_asin}\fR
+These variables formerly contained metadata for the AMZ file as a
+whole; current AMZ files do not contain this information.  Using these
+variables is not recommended.
+.PP
+Similar to shell variable expansion, you can also use the following
+conditional expressions:
+.TP
+\fB${\fIvar\fB:-\fIstring\fB}\fR
+Expands to the value of variable \fIvar\fR if it is defined and
+non-empty; otherwise, expands to \fIstring\fR (which may itself
+contain variable references.)
+.TP
+\fB${\fIvar\fB:+\fIstring\fB}\fR
+Expands to \fIstring\fR if the variable \fIvar\fR is defined and
+non-empty; otherwise, expands to an empty string.
+.PP
+Note that when you include format variables in a command-line
+argument, you will usually need to enclose the argument in single
+quotes ('...'), or insert a backslash before the `$', to prevent the
+shell from trying to expand the variables itself.
+
+.SH FILES
+.TP
+$HOME/.clamz/config
+General configuration file, providing default settings for the
+\fB--output\fR, \fB--forbid-chars\fR, \fB--allow-uppercase\fR and
+\fB--utf8-filenames\fR options.
+.TP
+$HOME/.clamz/amzfiles/
+Directory containing backup copies of AMZ files.
+.TP
+$HOME/.clamz/logs/
+Directory containing log files.
+
+.SH ENVIRONMENT
+.TP
+http_proxy
+HTTP proxy to use for downloading files; use `server:port' to specify
+a port number.
+
+.SH AUTHOR
+Benjamin Moody <floppusmaximus@users.sf.net>
