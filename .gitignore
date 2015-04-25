@@ -1,0 +1,9 @@
+Makefile
+clamz
+*.o
+config.h
+config.log
+config.status
+
+*~
+.*.sw?
